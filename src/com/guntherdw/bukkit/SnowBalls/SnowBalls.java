@@ -1,6 +1,5 @@
 package com.guntherdw.bukkit.SnowBalls;
 
-import com.sun.deploy.util.VersionID;
 import org.bukkit.Material;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
