@@ -1,9 +1,11 @@
 package com.guntherdw.bukkit.SnowBalls;
 
+import com.guntherdw.bukkit.tweakcraft.TweakcraftUtils;
 import org.bukkit.Material;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Logger;
@@ -14,9 +16,12 @@ import java.util.logging.Logger;
 public class SnowBalls extends JavaPlugin {
 
     private final SnowBallsBlock blockListener = new SnowBallsBlock(this);
+    private final JsonHelper jsonHelper = new JsonHelper(this);
     protected static final Logger log = Logger.getLogger("Minecraft");
     protected static ShapelessRecipe[] woolRecipe = new ShapelessRecipe[15];
     protected static ShapelessRecipe   sandstoneRecipe;
+    protected TweakcraftUtils tcutils;
+
 
     public void onDisable() {
         //To change body of implemented methods use File | Settings | File Templates.
@@ -48,6 +53,23 @@ public class SnowBalls extends JavaPlugin {
         this.getServer().getPluginManager().registerEvent(Event.Type.LEAVES_DECAY, blockListener, Event.Priority.Monitor, this);
 
         this.addRecipes();
+        setupTcUtils();
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void setupTcUtils() {
+        Plugin plug = this.getServer().getPluginManager().getPlugin("TweakcraftUtils");
+        if(tcutils==null) {
+            if(plug!=null)
+                tcutils = (TweakcraftUtils) plug;
+        }
+    }
+
+    public JsonHelper getJsonHelper() {
+        return jsonHelper;
+    }
+
+    public TweakcraftUtils getTcutils() {
+        return tcutils;
     }
 }
