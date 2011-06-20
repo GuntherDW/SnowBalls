@@ -43,20 +43,18 @@ public class SnowBalls extends JavaPlugin {
         log.info("["+pdffile.getName()+"] "+pdffile.getName()+" version "+pdffile.getVersion()+" shutting down!");
     }
 
-    public void addRecipes() {
+    public void genRecipes() {
         ShapelessRecipe[] woolRecipe = new ShapelessRecipe[15];
         for(int i=1; i<16; i++)
         {
             woolRecipe[i-1] = new ShapelessRecipe(new ItemStack(Material.WOOL, 1, (byte)0));
             woolRecipe[i-1].addIngredient(Material.WOOL, i);
             woolRecipe[i-1].addIngredient(Material.INK_SACK, (byte) 15);
-            this.getServer().addRecipe(woolRecipe[i-1]);
             shapelessRecipes.add(woolRecipe[i-1]);
         }
         ShapelessRecipe   sandstoneRecipe;
         sandstoneRecipe = new ShapelessRecipe(new ItemStack(Material.SAND, 4, (byte) 0));
         sandstoneRecipe.addIngredient(Material.SANDSTONE);
-        this.getServer().addRecipe(sandstoneRecipe);
         shapelessRecipes.add(sandstoneRecipe);
         ShapedRecipe webrecipe;
         webrecipe = new ShapedRecipe(new ItemStack(Material.WEB, 1, (byte) 0));
@@ -64,10 +62,27 @@ public class SnowBalls extends JavaPlugin {
         webrecipe.setIngredient('A', Material.STRING);
         this.getServer().addRecipe(webrecipe);
         shapedRecipes.add(webrecipe);
+        ShapedRecipe spongerecipe = new ShapedRecipe(new ItemStack(Material.SPONGE, 8, (byte) 0));
+        spongerecipe.shape("AA","AA");
+        spongerecipe.setIngredient('A', Material.GOLD_BLOCK);
+        shapedRecipes.add(spongerecipe);
+        /* ShapedRecipe woodswordrecipe = new ShapedRecipe(new ItemStack(Material.WOOD_SWORD, 1, (byte) 0));
+        woodswordrecipe.shape("A","A","A");
+        woodswordrecipe.setIngredient('A', Material.STICK);
+        shapedRecipes.add(woodswordrecipe); */
         /* woolRecipe = new ShapelessRecipe(new ItemStack(Material.WOOL, 1));
         woolRecipe.addIngredient(Material.WOOL);
         woolRecipe.addIngredient(Material.INK_SACK, (byte) 15);
         this.getServer().addRecipe(woolRecipe); */
+    }
+
+    public void addRecipes() {
+        for(ShapelessRecipe recipe : shapelessRecipes) {
+            this.getServer().addRecipe(recipe);
+        }
+        for(ShapedRecipe recipe : shapedRecipes) {
+            this.getServer().addRecipe(recipe);
+        }
     }
 
     public void onEnable() {
@@ -78,6 +93,9 @@ public class SnowBalls extends JavaPlugin {
         this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
         this.getServer().getPluginManager().registerEvent(Event.Type.LEAVES_DECAY, blockListener, Event.Priority.Monitor, this);
 
+        shapelessRecipes = new ArrayList<ShapelessRecipe>();
+        shapedRecipes = new ArrayList<ShapedRecipe>();
+        this.genRecipes();
         this.addRecipes();
         setupTcUtils();
         log.info("["+pdffile.getName()+"] "+pdffile.getName()+" version "+pdffile.getVersion()+" loaded!");
@@ -96,20 +114,36 @@ public class SnowBalls extends JavaPlugin {
         String s = "";
         ItemStack isr;
         List<MaterialData> ist;
-        for(ShapelessRecipe sr : shapelessRecipes) {
-            isr = sr.getResult();
-            ist = sr.getIngredientList();
-            s = CUIPattern+"0:"+isr.getTypeId()+";"+isr.getDurability()+";"+isr.getAmount();
-            for(MaterialData md : ist) {
-                s+="|"+md.getItemTypeId()+";"+md.getData()+";"+1;
+        if(shapelessRecipes!=null && shapelessRecipes.size()>0) {
+            for(ShapelessRecipe sr : shapelessRecipes) {
+                isr = sr.getResult();
+                ist = sr.getIngredientList();
+                s = CUIPattern+"0:"+isr.getTypeId()+";"+isr.getDurability()+";"+isr.getAmount();
+                for(MaterialData md : ist) {
+                    s+="|"+md.getItemTypeId()+";"+md.getData()+";"+1;
+                }
+                recipes.add(s);
             }
-            recipes.add(s);
         }
+
         for(ShapedRecipe shr : shapedRecipes) {
+            // List<String> shape = new ArrayList<String>();
+
+
             isr = shr.getResult();
             String[] shape = shr.getShape();
+            /* for(String ingr : shr.getShape()) {
+                shape.add(ingr);
+            } */
             s = CUIPattern+"1:"+isr.getTypeId()+";"+isr.getDurability()+";"+isr.getAmount();
+            /* while(shape.size()<3) {
+                shape.add("");
+            } */
             for(String sha : shape) {
+                /* while(sha.length()<3) {
+                    sha+=" ";
+                } */
+                // System.out.println("shape : "+sha.replace(' ', '.'));
                 for(char a:sha.toCharArray()) {
                     if(a==' ') {
                         s+="|";
