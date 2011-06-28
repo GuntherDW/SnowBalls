@@ -27,6 +27,7 @@ public class SnowBalls extends JavaPlugin {
 
     private final SnowBallsBlock blockListener = new SnowBallsBlock(this);
     private final SnowBallsPlayer playerListener = new SnowBallsPlayer(this);
+    private final SnowBallsInventory inventoryListener = new SnowBallsInventory(this);
     private final JsonHelper jsonHelper = new JsonHelper(this);
     private List<Player> cuiPlayers;
     protected String CUIPattern = "§7§3§3§7";
@@ -56,6 +57,10 @@ public class SnowBalls extends JavaPlugin {
         sandstoneRecipe = new ShapelessRecipe(new ItemStack(Material.SAND, 4, (byte) 0));
         sandstoneRecipe.addIngredient(Material.SANDSTONE);
         shapelessRecipes.add(sandstoneRecipe);
+        ShapedRecipe reversegoldrecipe = new ShapedRecipe(new ItemStack(Material.GOLD_BLOCK, 2, (byte) 0));
+        reversegoldrecipe.shape("AA","AA");
+        reversegoldrecipe.setIngredient('A', Material.SPONGE);
+        shapedRecipes.add(reversegoldrecipe);
         ShapedRecipe webrecipe;
         webrecipe = new ShapedRecipe(new ItemStack(Material.WEB, 1, (byte) 0));
         webrecipe.shape("A A", " A ", "A A");
@@ -66,14 +71,6 @@ public class SnowBalls extends JavaPlugin {
         spongerecipe.shape("AA","AA");
         spongerecipe.setIngredient('A', Material.GOLD_BLOCK);
         shapedRecipes.add(spongerecipe);
-        /* ShapedRecipe woodswordrecipe = new ShapedRecipe(new ItemStack(Material.WOOD_SWORD, 1, (byte) 0));
-        woodswordrecipe.shape("A","A","A");
-        woodswordrecipe.setIngredient('A', Material.STICK);
-        shapedRecipes.add(woodswordrecipe); */
-        /* woolRecipe = new ShapelessRecipe(new ItemStack(Material.WOOL, 1));
-        woolRecipe.addIngredient(Material.WOOL);
-        woolRecipe.addIngredient(Material.INK_SACK, (byte) 15);
-        this.getServer().addRecipe(woolRecipe); */
     }
 
     public void addRecipes() {
@@ -92,6 +89,7 @@ public class SnowBalls extends JavaPlugin {
         this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Monitor, this);
         this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
         this.getServer().getPluginManager().registerEvent(Event.Type.LEAVES_DECAY, blockListener, Event.Priority.Monitor, this);
+        this.getServer().getPluginManager().registerEvent(Event.Type.FURNACE_BURN, inventoryListener, Event.Priority.Monitor, this);
 
         shapelessRecipes = new ArrayList<ShapelessRecipe>();
         shapedRecipes = new ArrayList<ShapedRecipe>();
@@ -140,9 +138,9 @@ public class SnowBalls extends JavaPlugin {
                 shape.add("");
             } */
             for(String sha : shape) {
-                /* while(sha.length()<3) {
+                while(sha.length()<3) {
                     sha+=" ";
-                } */
+                }
                 // System.out.println("shape : "+sha.replace(' ', '.'));
                 for(char a:sha.toCharArray()) {
                     if(a==' ') {
