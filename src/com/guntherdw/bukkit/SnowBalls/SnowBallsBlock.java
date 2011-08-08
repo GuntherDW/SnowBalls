@@ -24,6 +24,16 @@ public class SnowBallsBlock extends BlockListener {
         this.plugin = instance;
     }
 
+    public boolean wasShears(ItemStack stack) {
+        if(stack==null)
+            return false;
+        else if(stack.getTypeId() == Material.SHEARS.getId())
+            return true;
+        else
+            return false;
+
+    }
+
     public void onBlockBreak(BlockBreakEvent event)
     {
         if(event.getBlock().getTypeId() == 79 // Material.ICE
@@ -36,7 +46,9 @@ public class SnowBallsBlock extends BlockListener {
 
         } else if(event.getBlock().getTypeId() ==  18 // Material.LEAVES.getId()
                 && !event.isCancelled()
-                && event.getBlock().getData() == ((byte) 2)) { // birch trees
+                && event.getBlock().getData() == ((byte) 2)
+                && event.getPlayer().getItemInHand()!=null
+                && !wasShears(event.getPlayer().getItemInHand())) { // birch trees
             if(rnd.nextInt(1000) == 997) // low chance!
             {
                 plugin.log.info("[SnowBalls] BONUS for "+event.getPlayer().getName()+" @ x:"
