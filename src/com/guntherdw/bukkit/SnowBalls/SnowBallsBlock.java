@@ -34,6 +34,26 @@ public class SnowBallsBlock extends BlockListener {
 
     }
 
+    public void onBlockFromTo(BlockFromToEvent event){
+        if(event.isCancelled())
+            return;
+        if(event.getBlock().getTypeId() == Material.STATIONARY_LAVA.getId() && event.getToBlock().getTypeId() == Material.AIR.getId()){
+            Block start = event.getToBlock();
+            Block toCheck;
+            for(int dx = -1; dx<=1; dx++){
+                for(int dz = -1; dz<=1; dz++){
+                    if(dz == 0 && dx == 0)
+                        return;
+                    toCheck = start.getRelative(dx,0,dz);
+                    if(toCheck.getTypeId() != Material.STATIONARY_LAVA.getId()) {
+                        return;
+                    }
+                }
+            }
+            event.getToBlock().setType(Material.STATIONARY_LAVA);
+        }
+    }
+
     public void onBlockBreak(BlockBreakEvent event)
     {
         if(event.getBlock().getTypeId() == 79 // Material.ICE
