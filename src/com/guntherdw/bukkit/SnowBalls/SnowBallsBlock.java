@@ -2,7 +2,10 @@ package com.guntherdw.bukkit.SnowBalls;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.inventory.ItemStack;
@@ -37,16 +40,25 @@ public class SnowBallsBlock extends BlockListener {
     public void onBlockFromTo(BlockFromToEvent event){
         if(event.isCancelled())
             return;
-        if(event.getBlock().getTypeId() == Material.STATIONARY_LAVA.getId() && event.getToBlock().getTypeId() == Material.AIR.getId()){
+        if(event.getBlock().getTypeId() == Material.STATIONARY_LAVA.getId()
+                && event.getToBlock().getTypeId() == Material.AIR.getId()) {
             Block start = event.getToBlock();
             Block toCheck;
+            BlockFace[] faces = {BlockFace.EAST, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH};
             for(int dx = -1; dx<=1; dx++){
                 for(int dz = -1; dz<=1; dz++){
-                    if(dz == 0 && dx == 0)
-                        return;
+
+                    if(dz == 0 && dx == 0) {
+                        continue;
+                    }
                     toCheck = start.getRelative(dx,0,dz);
                     if(toCheck.getTypeId() != Material.STATIONARY_LAVA.getId()) {
-                        return;
+                        boolean checked = false;
+                        for(BlockFace bf : faces) {
+                            if(toCheck.getRelative(bf).equals(start) && toCheck.getType() == Material.LAVA)
+                                checked = true;
+                        }
+                        if(!checked) return;
                     }
                 }
             }
