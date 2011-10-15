@@ -59,24 +59,38 @@ public class SnowBalls extends JavaPlugin {
             woolRecipe[i-1].addIngredient(Material.INK_SACK, (byte) 15);
             shapelessRecipes.add(woolRecipe[i-1]);
         }
-        ShapelessRecipe   sandstoneRecipe;
+
+        ShapelessRecipe sandstoneRecipe;
         sandstoneRecipe = new ShapelessRecipe(new ItemStack(Material.SAND, 4, (byte) 0));
         sandstoneRecipe.addIngredient(Material.SANDSTONE);
         shapelessRecipes.add(sandstoneRecipe);
-        ShapedRecipe reversegoldrecipe = new ShapedRecipe(new ItemStack(Material.GOLD_BLOCK, 2, (byte) 0));
-        reversegoldrecipe.shape("AA","AA");
-        reversegoldrecipe.setIngredient('A', Material.SPONGE);
-        shapedRecipes.add(reversegoldrecipe);
-        ShapedRecipe webrecipe;
-        webrecipe = new ShapedRecipe(new ItemStack(Material.WEB, 1, (byte) 0));
-        webrecipe.shape("A A", " A ", "A A");
-        webrecipe.setIngredient('A', Material.STRING);
-        this.getServer().addRecipe(webrecipe);
-        shapedRecipes.add(webrecipe);
-        ShapedRecipe spongerecipe = new ShapedRecipe(new ItemStack(Material.SPONGE, 8, (byte) 0));
-        spongerecipe.shape("AA","AA");
-        spongerecipe.setIngredient('A', Material.GOLD_BLOCK);
-        shapedRecipes.add(spongerecipe);
+
+        ShapelessRecipe hackedSlabRecipe;
+        hackedSlabRecipe = new ShapelessRecipe(new ItemStack(Material.STEP, 1, (byte) 6));
+        hackedSlabRecipe.addIngredient(new MaterialData(Material.STEP, (byte) 0));
+        shapelessRecipes.add(hackedSlabRecipe);
+
+        ShapelessRecipe reverseHackedSlabRecipe;
+        reverseHackedSlabRecipe = new ShapelessRecipe(new ItemStack(Material.SAND, 1, (byte) 0));
+        reverseHackedSlabRecipe.addIngredient(new MaterialData(Material.STEP, (byte) 6));
+        shapelessRecipes.add(reverseHackedSlabRecipe);
+
+        ShapedRecipe reverseGoldRecipe = new ShapedRecipe(new ItemStack(Material.GOLD_BLOCK, 2, (byte) 0));
+        reverseGoldRecipe.shape("AA","AA");
+        reverseGoldRecipe.setIngredient('A', Material.SPONGE);
+        shapedRecipes.add(reverseGoldRecipe);
+
+        ShapedRecipe webRecipe;
+        webRecipe = new ShapedRecipe(new ItemStack(Material.WEB, 1, (byte) 0));
+        webRecipe.shape("A A", " A ", "A A");
+        webRecipe.setIngredient('A', Material.STRING);
+        //this.getServer().addRecipe(webrecipe);
+        shapedRecipes.add(webRecipe);
+
+        ShapedRecipe spongeRecipe = new ShapedRecipe(new ItemStack(Material.SPONGE, 8, (byte) 0));
+        spongeRecipe.shape("AA","AA");
+        spongeRecipe.setIngredient('A', Material.GOLD_BLOCK);
+        shapedRecipes.add(spongeRecipe);
 
         /* ItemStack itemstack = new ItemStack(Material.SIGN,  1);
         itemstack.set */
