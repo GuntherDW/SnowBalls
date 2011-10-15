@@ -2,7 +2,7 @@ name: SnowBalls
 main: com.guntherdw.bukkit.SnowBalls.SnowBalls
 depend:
    - TweakcraftUtils
-version: 2.0
+version: 2.1
 commands:
     snowballs:
         description: ClientMod interface
