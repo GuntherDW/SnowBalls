@@ -71,7 +71,7 @@ public class SnowBalls extends JavaPlugin {
         shapelessRecipes.add(hackedSlabRecipe);
 
         ShapelessRecipe reverseHackedSlabRecipe;
-        reverseHackedSlabRecipe = new ShapelessRecipe(new ItemStack(Material.SAND, 1, (byte) 0));
+        reverseHackedSlabRecipe = new ShapelessRecipe(new ItemStack(Material.STEP, 1, (byte) 0));
         reverseHackedSlabRecipe.addIngredient(new MaterialData(Material.STEP, (byte) 6));
         shapelessRecipes.add(reverseHackedSlabRecipe);
 
