@@ -4,11 +4,11 @@ import com.guntherdw.bukkit.tweakcraft.TweakcraftUtils;
 import com.sk89q.worldedit.blocks.ItemType;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
@@ -20,7 +20,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
 /**
@@ -42,45 +41,97 @@ public class SnowBalls extends JavaPlugin {
     protected WorldGuardPlugin wg = null;
     protected WorldEditPlugin we = null;
     private PluginDescriptionFile pdffile;
+    protected boolean enableInfiniteLava = false;
+    protected boolean enableMaxStack = false;
+    protected boolean leavesLoot = false;
+    protected boolean bookshelvesdrop = false;
+    protected boolean icedrop = false;
+    private boolean inited = false;
+    protected Map<Integer, Integer> origstacksizes = new HashMap<Integer, Integer>();
+/*
+block:
+   cacaobeanbonus: true
+   dropbookshelves: true
+   dropice: true
+ */
+
+    @SuppressWarnings("unchecked")
+    private void parseConfig() {
+
+        /* Dirty hack for /snowballs reload */
+
+        if(inited) { this.shapelessRecipes.clear(); this.shapedRecipes.clear(); this.getConfiguration().load(); }
+        else       inited = true;
 
 
+
+        this.enableInfiniteLava = this.getConfiguration().getBoolean("hacks.inflava", false);
+        if(this.enableInfiniteLava) log.info("[SnowBalls] Infinite lava hack enabled!");
+        this.enableMaxStack = this.getConfiguration().getBoolean("hacks.maxstack", false);
+        if(this.enableMaxStack) log.info("[SnowBalls] Custom max stack size enabled!");
+
+        this.leavesLoot = this.getConfiguration().getBoolean("block.cacaobeanbonus", false);
+        if(this.leavesLoot) log.info("[SnowBalls] Extra birch leaves loot bonus enabled!");
+        this.bookshelvesdrop = this.getConfiguration().getBoolean("block.dropbookshelves", false);
+        if(this.bookshelvesdrop) log.info("[SnowBalls] Book shelves dropping enabled!");
+        this.icedrop = this.getConfiguration().getBoolean("block.dropice", false);
+        if(this.icedrop) log.info("[SnowBalls] Ice dropping enabled!");
+
+        List<String> shapelesslines = this.getConfiguration().getKeys("recipes.shapeless");
+        for(String s1 : shapelesslines) {
+            try {
+                List<Integer> result = this.getConfiguration().getIntList("recipes.shapeless."+s1+".result", null);
+                ShapelessRecipe sl = new ShapelessRecipe(new ItemStack(result.get(0), result.get(2), result.get(1).shortValue()));
+                List<Object> ingredients = this.getConfiguration().getList("recipes.shapeless."+s1+".ingredients");
+                if(ingredients!=null) {
+                    for(Object iline : ingredients) {
+                        if(iline instanceof List) {
+                            List<Integer> l = (List<Integer>) iline;
+                            sl.addIngredient(Material.getMaterial(l.get(0)), l.get(1));
+                        }
+                    }
+                }
+                // this.getServer().addRecipe(sl);
+                log.info("[SnowBalls] Added shapeless recipe with name '"+s1+"'!");
+                shapelessRecipes.add(sl);
+
+            } catch(NullPointerException ex) {
+                System.out.println("Error with recipe '"+s1+"'!");
+            }
+        }
+
+        List<String> shapedrecipelines = this.getConfiguration().getKeys("recipes.shaped");
+        for(String s1 : shapedrecipelines) {
+            try{
+                List<Integer> result = this.getConfiguration().getIntList("recipes.shaped."+s1+".result", null);
+                ShapedRecipe sr = new ShapedRecipe(new ItemStack(result.get(0), result.get(2), result.get(1).shortValue()));
+                // sr.
+                String[] shape = this.getConfiguration().getStringList("recipes.shaped."+s1+".shape", null).toArray(new String[0]);
+                sr.shape(shape);
+                for(String charac : this.getConfiguration().getKeys("recipes.shaped."+s1+".ingredients")) {
+                    List<Integer> l = this.getConfiguration().getIntList("recipes.shaped."+s1+".ingredients."+charac, null);
+                    Material mat = Material.getMaterial(l.get(0));
+                    sr.setIngredient(charac.toCharArray()[0], mat, l.get(1));
+                }
+                log.info("[SnowBalls] Added shaped recipe with name '"+s1+"'!");
+                shapedRecipes.add(sr);
+            } catch(NullPointerException ex) {
+                System.out.println("Error with recipe '"+s1+"'!");
+            }
+        }
+
+        // if(enableInfiniteLava)
+        if(enableMaxStack) this.setMaxStack();
+    }
 
     public void onDisable() {
         //To change body of implemented methods use File | Settings | File Templates.
         log.info("["+pdffile.getName()+"] "+pdffile.getName()+" version "+pdffile.getVersion()+" shutting down!");
     }
 
-    public void genRecipes() {
-        ShapelessRecipe[] woolRecipe = new ShapelessRecipe[15];
-        for(int i=1; i<16; i++)
-        {
-            woolRecipe[i-1] = new ShapelessRecipe(new ItemStack(Material.WOOL, 1, (byte)0));
-            woolRecipe[i-1].addIngredient(Material.WOOL, i);
-            woolRecipe[i-1].addIngredient(Material.INK_SACK, (byte) 15);
-            shapelessRecipes.add(woolRecipe[i-1]);
-        }
-        ShapelessRecipe   sandstoneRecipe;
-        sandstoneRecipe = new ShapelessRecipe(new ItemStack(Material.SAND, 4, (byte) 0));
-        sandstoneRecipe.addIngredient(Material.SANDSTONE);
-        shapelessRecipes.add(sandstoneRecipe);
-        ShapedRecipe reversegoldrecipe = new ShapedRecipe(new ItemStack(Material.GOLD_BLOCK, 2, (byte) 0));
-        reversegoldrecipe.shape("AA","AA");
-        reversegoldrecipe.setIngredient('A', Material.SPONGE);
-        shapedRecipes.add(reversegoldrecipe);
-        ShapedRecipe webrecipe;
-        webrecipe = new ShapedRecipe(new ItemStack(Material.WEB, 1, (byte) 0));
-        webrecipe.shape("A A", " A ", "A A");
-        webrecipe.setIngredient('A', Material.STRING);
-        this.getServer().addRecipe(webrecipe);
-        shapedRecipes.add(webrecipe);
-        ShapedRecipe spongerecipe = new ShapedRecipe(new ItemStack(Material.SPONGE, 8, (byte) 0));
-        spongerecipe.shape("AA","AA");
-        spongerecipe.setIngredient('A', Material.GOLD_BLOCK);
-        shapedRecipes.add(spongerecipe);
-
-        /* ItemStack itemstack = new ItemStack(Material.SIGN,  1);
-        itemstack.set */
-    }
+    /* public void genRecipes() {
+        this.reloadConfig();
+    } */
 
     public void addRecipes() {
         for(ShapelessRecipe recipe : shapelessRecipes) {
@@ -108,9 +159,8 @@ public class SnowBalls extends JavaPlugin {
 
         shapelessRecipes = new ArrayList<ShapelessRecipe>();
         shapedRecipes = new ArrayList<ShapedRecipe>();
-        this.genRecipes();
+        this.parseConfig();
         this.addRecipes();
-        this.setMaxStack();
 
         log.info("["+pdffile.getName()+"] "+pdffile.getName()+" version "+pdffile.getVersion()+" loaded!");
     }
@@ -141,17 +191,27 @@ public class SnowBalls extends JavaPlugin {
 
 
     public void setMaxStack() {
+        // log.info("[SnowBalls] Custom max stack sizes enabled!");
         extraids = new TreeMap<Integer, Integer>();
+
+        /* for(Integer i : origstacksizes.keySet()) {
+
+        } */
+
         for(Material mat : Material.values()) {
             int matid = mat.getId();
 
             if(mat.getMaxStackSize() != 64
                     && !ItemType.shouldNotStack(matid))
             {
+                if(!origstacksizes.containsKey(matid)) { // Only store it if we're going to change it!
+                    origstacksizes.put(matid, mat.getMaxStackSize());
+                }
                 /* ItemStack stack = new ItemStack(matid);
                 stack */
                 CraftItemStack cis = new CraftItemStack(matid);
                 cis.setMaxStackSize(64);
+                
                 extraids.put(matid, 64);
                 // stack.setMaxStackSize(64);
             }
@@ -247,24 +307,30 @@ public class SnowBalls extends JavaPlugin {
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(command.getName().equals("snowballs")) {
-            if(sender instanceof Player) {
-                if(args.length>0) {
-                    if(args[0].equalsIgnoreCase("client")) {
-                        if(!cuiPlayers.contains((Player)sender)) {
-                            log.info("["+pdffile.getName()+"] Adding "+((Player) sender).getName()+" to the SUI list...");
-                            cuiPlayers.add((Player) sender);
-                        } else {
-                            log.info("["+pdffile.getName()+"] "+((Player) sender).getName()+" already is assigned to the SUI list...");
-                        }
-                        this.sendRecipes((Player) sender);
-                    } else if(args[0].equalsIgnoreCase("sendrecipes")) {
-                        this.sendRecipes((Player) sender);
+
+            if(args.length>0) {
+                if(args[0].equalsIgnoreCase("client")) {
+                    if(!cuiPlayers.contains((Player)sender)) {
+                        log.info("["+pdffile.getName()+"] Adding "+((Player) sender).getName()+" to the SUI list...");
+                        cuiPlayers.add((Player) sender);
+                    } else {
+                        log.info("["+pdffile.getName()+"] "+((Player) sender).getName()+" already is assigned to the SUI list...");
                     }
-                } else {
-                    sender.sendMessage(command.getUsage());
+                    this.sendRecipes((Player) sender);
+                } else if(args[0].equalsIgnoreCase("sendrecipes")) {
+                    this.sendRecipes((Player) sender);
                 }
             } else {
-                sender.sendMessage("What are you doing here?");
+                sender.sendMessage(command.getUsage());
+            }
+        }
+
+        if(args.length>0 && args[0].equalsIgnoreCase("reload")) {
+            if(sender.isOp() || sender.hasPermission("snowballs.reloadconfig")) {
+                sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
+                this.parseConfig();
+            } else {
+                sender.sendMessage(ChatColor.YELLOW + "You don't have permission for this!");
             }
         }
         return true;

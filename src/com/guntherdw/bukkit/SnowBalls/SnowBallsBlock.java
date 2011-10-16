@@ -10,7 +10,6 @@ import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -38,8 +37,9 @@ public class SnowBallsBlock extends BlockListener {
     }
 
     public void onBlockFromTo(BlockFromToEvent event){
-        if(event.isCancelled())
-            return;
+        if(!plugin.enableInfiniteLava) return;
+        if(event.isCancelled())        return;
+
         if(event.getBlock().getTypeId() == Material.STATIONARY_LAVA.getId()
                 && event.getToBlock().getTypeId() == Material.AIR.getId()) {
             Block start = event.getToBlock();
@@ -69,7 +69,8 @@ public class SnowBallsBlock extends BlockListener {
     public void onBlockBreak(BlockBreakEvent event)
     {
         if(event.getBlock().getTypeId() == 79 // Material.ICE
-                && !event.isCancelled()) // ice
+                && !event.isCancelled()
+                && plugin.icedrop) // ice
         {
             // String worldname = event.getPlayer().getLocation().getWorld().getName();
             Location loc = event.getBlock().getLocation();
@@ -77,6 +78,7 @@ public class SnowBallsBlock extends BlockListener {
             loc.getWorld().dropItem(loc, new ItemStack(79, 1));
 
         } else if(event.getBlock().getTypeId() ==  18 // Material.LEAVES.getId()
+                && plugin.leavesLoot
                 && !event.isCancelled()
                 && event.getBlock().getData() == ((byte) 2)
                 && event.getPlayer().getItemInHand()!=null
@@ -89,7 +91,9 @@ public class SnowBallsBlock extends BlockListener {
                 loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.INK_SACK, 1, (short) 3));
                 // INK SAC, data(3) == cacao beans!
             }
-        } else if(event.getBlock().getTypeId() == 47 && !event.isCancelled()) { // Material.BOOKSHELF) {
+        } else if(event.getBlock().getTypeId() == 47
+                && !event.isCancelled()
+                && plugin.bookshelvesdrop) { // Material.BOOKSHELF) {
             Location loc = event.getBlock().getLocation();
             loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.BOOKSHELF,1));
         } /* else if(event.getBlock().getTypeId() == 89 && !event.isCancelled()) { // Material.GLOWSTONE.getId()) {
@@ -100,8 +104,8 @@ public class SnowBallsBlock extends BlockListener {
     }
 
     public void onLeavesDecay(LeavesDecayEvent event) {
-        if(event.isCancelled())
-            return;
+        if(!plugin.leavesLoot)  return;
+        if(event.isCancelled()) return;
         int data = (event.getBlock().getData()&2);
         if(data == ((byte) 2)) { // birch trees
             // System.out.println("It is birch!");

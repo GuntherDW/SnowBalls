@@ -1,0 +1,84 @@
+block:
+   cacaobeanbonus: true
+   dropbookshelves: true
+   dropice: true
+
+hacks:
+   inflava: true
+   maxstack: true
+
+recipes:
+   shaped:
+      web:
+         result: [ 30, 0, 1 ]
+         shape: ['A A', ' A ', 'A A']
+         ingredients:
+             A: [ 287, 0 ]
+      sponge:
+         result: [ 19, 0, 8 ]
+         shape: ['AA', 'AA']
+         ingredients:
+             A: [ 41, 0 ]
+      reversesponge:
+         result: [ 41, 0, 4 ]
+         shape: ['AA', 'AA']
+         ingredients:
+             A: [ 19, 0 ]
+   shapeless:
+      crackedbrick:
+         result: [ 98, 2, 1 ]
+         ingredients: [ [98, 0], [289, 0] ]
+      sandstone:
+         result: [ 12, 0, 4 ]
+         ingredients: [ [24, 0] ]
+      slabRecipe:
+         result: [ 44, 6, 1 ]
+         ingredients: [ [44, 0] ]
+      reverseSlabRecipe:
+         result: [ 44, 0, 1 ]
+         ingredients: [ [44, 6] ]
+      woolrecipe1:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 1], [351, 15] ]
+      woolrecipe2:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 2], [351, 15] ]
+      woolrecipe3:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 3], [351, 15] ]
+      woolrecipe4:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 4], [351, 15] ]
+      woolrecipe5:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 5], [351, 15] ]
+      woolrecipe6:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 6], [351, 15] ]
+      woolrecipe7:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 7], [351, 15] ]
+      woolrecipe8:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 8], [351, 15] ]
+      woolrecipe9:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 9], [351, 15] ]
+      woolrecipe10:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 10], [351, 15] ]
+      woolrecipe11:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 11], [351, 15] ]
+      woolrecipe12:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 12], [351, 15] ]
+      woolrecipe13:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 13], [351, 15] ]
+      woolrecipe14:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 14], [351, 15] ]
+      woolrecipe15:
+         result: [ 35, 0, 1 ]
+         ingredients: [ [35, 15], [351, 15] ]
