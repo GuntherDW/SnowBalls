@@ -63,8 +63,6 @@ block:
         if(inited) { this.shapelessRecipes.clear(); this.shapedRecipes.clear(); this.getConfiguration().load(); }
         else       inited = true;
 
-
-
         this.enableInfiniteLava = this.getConfiguration().getBoolean("hacks.inflava", false);
         if(this.enableInfiniteLava) log.info("[SnowBalls] Infinite lava hack enabled!");
         this.enableMaxStack = this.getConfiguration().getBoolean("hacks.maxstack", false);
@@ -329,6 +327,7 @@ block:
             if(sender.isOp() || sender.hasPermission("snowballs.reloadconfig")) {
                 sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
                 this.parseConfig();
+                this.addRecipes();
             } else {
                 sender.sendMessage(ChatColor.YELLOW + "You don't have permission for this!");
             }
