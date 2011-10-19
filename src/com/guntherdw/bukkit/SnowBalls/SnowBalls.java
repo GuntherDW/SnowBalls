@@ -31,7 +31,8 @@ public class SnowBalls extends JavaPlugin {
     private final SnowBallsPlayer playerListener = new SnowBallsPlayer(this);
     // private final SnowBallsInventory inventoryListener = new SnowBallsInventory(this);
     private final JsonHelper jsonHelper = new JsonHelper(this);
-    private List<Player> cuiPlayers;
+    private Map<Player, Boolean> cuiPlayers;
+    // private Map<Player, Boolean> newCUI;
     protected String CUIPattern = "§7§3§3§7";
     protected static final Logger log = Logger.getLogger("Minecraft");
     protected static List<ShapelessRecipe> shapelessRecipes;
@@ -141,7 +142,9 @@ block:
     }
 
     public void onEnable() {
-        cuiPlayers = new ArrayList<Player>();
+        // cuiPlayers = new ArrayList<Player>();
+        // newCUI =
+        cuiPlayers = new HashMap<Player, Boolean>();
         pdffile = this.getDescription();
 
         this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Monitor, this);
@@ -218,7 +221,7 @@ block:
 
 
 
-    public List<String> getRecipes() {
+    public List<String> getRecipes(boolean SUIv2) {
         List<String> recipes = new ArrayList<String>();
         String s = "";
         ItemStack isr;
@@ -229,21 +232,19 @@ block:
                 ist = sr.getIngredientList();
                 s = CUIPattern+"0:"+isr.getTypeId()+";"+isr.getDurability()+";"+isr.getAmount();
                 for(MaterialData md : ist) {
-                    s+="|"+md.getItemTypeId()+";"+md.getData()+";"+1;
+                    if(!SUIv2)
+                        s+="|"+md.getItemTypeId()+";"+md.getData()+";"+1;
+                    else
+                        s+="|"+md.getItemTypeId()+(md.getData()!=0?";"+md.getData():"");
+
                 }
                 recipes.add(s);
             }
         }
 
         for(ShapedRecipe shr : shapedRecipes) {
-            // List<String> shape = new ArrayList<String>();
-
-
             isr = shr.getResult();
             String[] shape = shr.getShape();
-            /* for(String ingr : shr.getShape()) {
-                shape.add(ingr);
-            } */
             s = CUIPattern+"1:"+isr.getTypeId()+";"+isr.getDurability()+";"+isr.getAmount();
             /* while(shape.size()<3) {
                 shape.add("");
@@ -258,7 +259,8 @@ block:
                         s+="|";
                     } else {
                         MaterialData md = shr.getIngredientMap().get(a);
-                        s+="|"+md.getItemTypeId()+";"+md.getData()+";"+1;
+                        if(!SUIv2) s+="|"+md.getItemTypeId()+";"+md.getData()+";"+1;
+                        else s+="|"+md.getItemTypeId()+(md.getData()!=0?";"+md.getData():"");
                     }
                 }
             }
@@ -296,43 +298,62 @@ block:
     }
 
     public void sendRecipes(Player p) {
-        if(cuiPlayers.contains(p)) {
-            for(String r : getRecipes()) {
-                p.sendRawMessage(r);
+        if(cuiPlayers.containsKey(p)) {
+            boolean SUIv2 = cuiPlayers.get(p);
+            for(String r : getRecipes(SUIv2)) {
+                // boolean go = true;
+                if(r.length()>60 && !SUIv2) {
+                    p.sendMessage(ChatColor.AQUA+"This server uses recipes with a newer format");
+                    p.sendMessage(ChatColor.AQUA+"You're running a legacy version of the SnowBalls-clientmod,");
+                    p.sendMessage(ChatColor.AQUA+"Please upgrade your clientmod to fully utilise all the recipes");
+                } else {
+                    p.sendRawMessage(r);
+                }
             }
         }
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if(command.getName().equals("snowballs")) {
-
             if(args.length>0) {
-                if(args[0].equalsIgnoreCase("client")) {
-                    if(!cuiPlayers.contains((Player)sender)) {
-                        log.info("["+pdffile.getName()+"] Adding "+((Player) sender).getName()+" to the SUI list...");
-                        cuiPlayers.add((Player) sender);
+                if(args[0].equalsIgnoreCase("client") && sender instanceof Player) {
+                    Player player = (Player) sender;
+                    boolean SUIv2 = args.length>1 && args[1].equalsIgnoreCase("SUIv2");
+                    if(!SUIv2)
+                        log.info("["+pdffile.getName()+"] WARNING: "+player.getName()+" is using a legacy version of SnowBalls-clientmod!");
+
+                    boolean onList = cuiPlayers.containsKey(player);
+
+
+                    if(!onList) {
+                        log.info("["+pdffile.getName()+"] Adding "+player.getName()+" to the SUI list...");
+                        cuiPlayers.put((Player)sender, SUIv2);
                     } else {
-                        log.info("["+pdffile.getName()+"] "+((Player) sender).getName()+" already is assigned to the SUI list...");
+                        boolean legacy = !cuiPlayers.get(player);
+                        if(legacy && SUIv2) {
+                            log.info("["+pdffile.getName()+"] Updating "+player.getName()+"'s SUI status to SUIv2");
+                            cuiPlayers.put((Player)sender, SUIv2);
+                        } else {
+                            log.info("["+pdffile.getName()+"] "+player.getName()+" already is assigned to the SUI list...");
+                        }
                     }
+                    
                     this.sendRecipes((Player) sender);
                 } else if(args[0].equalsIgnoreCase("sendrecipes")) {
                     this.sendRecipes((Player) sender);
+                } else if(args[0].equalsIgnoreCase("reload")) {
+                    if(sender.isOp() || sender.hasPermission("snowballs.reloadconfig")) {
+                        sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
+                        this.parseConfig();
+                        this.addRecipes();
+                    } else {
+                        sender.sendMessage(ChatColor.YELLOW + "You don't have permission for this!");
+                    }
+                } else {
+                    sender.sendMessage(command.getUsage());
                 }
-            } else {
-                sender.sendMessage(command.getUsage());
-            }
-        }
-
-        if(args.length>0 && args[0].equalsIgnoreCase("reload")) {
-            if(sender.isOp() || sender.hasPermission("snowballs.reloadconfig")) {
-                sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
-                this.parseConfig();
-                this.addRecipes();
-            } else {
-                sender.sendMessage(ChatColor.YELLOW + "You don't have permission for this!");
             }
         }
         return true;
     }
-
 }
