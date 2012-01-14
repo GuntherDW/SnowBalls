@@ -84,7 +84,7 @@ public class SnowBallsBlock extends BlockListener {
                 loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.INK_SACK, 1, (short) 3));
                 // INK SAC, data(3) == cacao beans!
             }
-        } else if(event.getBlock().getTypeId() == 47                && !event.isCancelled()
+        } else if(event.getBlock().getTypeId() == 47
                 && plugin.bookshelvesdrop) { // Material.BOOKSHELF) {
             Location loc = event.getBlock().getLocation();
             loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.BOOKSHELF,1));
