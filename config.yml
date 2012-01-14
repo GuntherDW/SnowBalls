@@ -1,6 +1,6 @@
 block:
     cacaobeanbonus: true
-    dropbookshelves: true
+    dropbookshelves: false
     dropice: true
 
 hacks:

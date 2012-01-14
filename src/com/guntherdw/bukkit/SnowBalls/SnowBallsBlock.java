@@ -27,13 +27,7 @@ public class SnowBallsBlock extends BlockListener {
     }
 
     public boolean wasShears(ItemStack stack) {
-        if(stack==null)
-            return false;
-        else if(stack.getTypeId() == Material.SHEARS.getId())
-            return true;
-        else
-            return false;
-
+        return stack!=null && stack.getTypeId() == Material.SHEARS.getId();
     }
 
     public void onBlockFromTo(BlockFromToEvent event){
@@ -68,8 +62,9 @@ public class SnowBallsBlock extends BlockListener {
 
     public void onBlockBreak(BlockBreakEvent event)
     {
+        if(event.isCancelled()) return;
+
         if(event.getBlock().getTypeId() == 79 // Material.ICE
-                && !event.isCancelled()
                 && plugin.icedrop) // ice
         {
             // String worldname = event.getPlayer().getLocation().getWorld().getName();
@@ -79,9 +74,7 @@ public class SnowBallsBlock extends BlockListener {
 
         } else if(event.getBlock().getTypeId() ==  18 // Material.LEAVES.getId()
                 && plugin.leavesLoot
-                && !event.isCancelled()
                 && event.getBlock().getData() == ((byte) 2)
-                && event.getPlayer().getItemInHand()!=null
                 && !wasShears(event.getPlayer().getItemInHand())) { // birch trees
             if(rnd.nextInt(1000) == 997) // low chance!
             {
@@ -91,16 +84,11 @@ public class SnowBallsBlock extends BlockListener {
                 loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.INK_SACK, 1, (short) 3));
                 // INK SAC, data(3) == cacao beans!
             }
-        } else if(event.getBlock().getTypeId() == 47
-                && !event.isCancelled()
+        } else if(event.getBlock().getTypeId() == 47                && !event.isCancelled()
                 && plugin.bookshelvesdrop) { // Material.BOOKSHELF) {
             Location loc = event.getBlock().getLocation();
             loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.BOOKSHELF,1));
-        } /* else if(event.getBlock().getTypeId() == 89 && !event.isCancelled()) { // Material.GLOWSTONE.getId()) {
-            Location loc = event.getBlock().getLocation();
-            for(int i=1; i<=8;i++)
-                loc.getWorld().dropItemNaturally(loc, new ItemStack(Material.GLOWSTONE_DUST, 1));
-        } */
+        }
     }
 
     public void onLeavesDecay(LeavesDecayEvent event) {

@@ -14,7 +14,7 @@ public class SnowBallsPlayer extends PlayerListener {
         this.plugin = instance;
     }
 
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    /* public void onPlayerJoin(PlayerJoinEvent event) {
         event.getPlayer().sendRawMessage(plugin.CUIPattern);
-    }
+    } */
 }
