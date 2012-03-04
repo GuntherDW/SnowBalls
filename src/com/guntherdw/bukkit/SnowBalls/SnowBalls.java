@@ -5,6 +5,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -53,72 +55,93 @@ public class SnowBalls extends JavaPlugin {
         /* Dirty hack for /snowballs reload */
 
         if (inited) {
-            this.shapelessRecipes.clear();
-            this.shapedRecipes.clear();
-            this.getConfiguration().load();
+            SnowBalls.shapelessRecipes.clear();
+            SnowBalls.shapedRecipes.clear();
+            try {
+                this.getConfig().load("config.yml");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InvalidConfigurationException e) {
+                e.printStackTrace();
+            }
         } else inited = true;
 
-        this.enableInfiniteLava = this.getConfiguration().getBoolean("hacks.inflava", false);
+        this.enableInfiniteLava = this.getConfig().getBoolean("hacks.inflava", false);
         if (this.enableInfiniteLava) log.info("[SnowBalls] Infinite lava hack enabled!");
-        this.enableMaxStack = this.getConfiguration().getBoolean("hacks.maxstack", false);
+        this.enableMaxStack = this.getConfig().getBoolean("hacks.maxstack", false);
         if (this.enableMaxStack) log.info("[SnowBalls] Custom max stack size enabled!");
 
-        this.leavesLoot = this.getConfiguration().getBoolean("block.cacaobeanbonus", false);
+        this.leavesLoot = this.getConfig().getBoolean("block.cacaobeanbonus", false);
         if (this.leavesLoot) log.info("[SnowBalls] Extra birch leaves loot bonus enabled!");
-        this.bookshelvesdrop = this.getConfiguration().getBoolean("block.dropbookshelves", false);
+        this.bookshelvesdrop = this.getConfig().getBoolean("block.dropbookshelves", false);
         if (this.bookshelvesdrop) log.info("[SnowBalls] Book shelves dropping enabled!");
-        this.icedrop = this.getConfiguration().getBoolean("block.dropice", false);
+        this.icedrop = this.getConfig().getBoolean("block.dropice", false);
         if (this.icedrop) log.info("[SnowBalls] Ice dropping enabled!");
 
-        List<String> shapelesslines = this.getConfiguration().getKeys("recipes.shapeless");
-        for (String s1 : shapelesslines) {
-            try {
-                List<Integer> result = this.getConfiguration().getIntList("recipes.shapeless." + s1 + ".result", null);
-                ShapelessRecipe sl = new ShapelessRecipe(new ItemStack(result.get(0), result.get(2), result.get(1).shortValue()));
-                List<Object> ingredients = this.getConfiguration().getList("recipes.shapeless." + s1 + ".ingredients");
-                if (ingredients != null) {
-                    for (Object iline : ingredients) {
-                        if (iline instanceof List) {
-                            List<Integer> l = (List<Integer>) iline;
-                            if (l.size() > 2)
-                                sl.addIngredient(l.get(2), Material.getMaterial(l.get(0)), l.get(1));
-                            else
-                                sl.addIngredient(Material.getMaterial(l.get(0)), l.get(1));
+        ConfigurationSection section = this.getConfig().getConfigurationSection("recipes.shapeless");
+        if (section != null) {
+            Set<String> shapelesslines = section.getKeys(false);
 
+            for (String s1 : shapelesslines) {
+                try {
+                    List<Integer> result = this.getConfig().getIntegerList("recipes.shapeless." + s1 + ".result");
+                    ShapelessRecipe sl = new ShapelessRecipe(new ItemStack(result.get(0), result.get(2), result.get(1).shortValue()));
+                    List<?> ingredients = this.getConfig().getList("recipes.shapeless." + s1 + ".ingredients", null);
+                    if (ingredients != null) {
+
+                        for (Object iline : ingredients) {
+                            if (iline instanceof List) {
+                                List<Integer> l = (List<Integer>) iline;
+                                if (l.size() > 2)
+                                    sl.addIngredient(l.get(2), Material.getMaterial(l.get(0)), l.get(1));
+                                else
+                                    sl.addIngredient(Material.getMaterial(l.get(0)), l.get(1));
+                            }
                         }
                     }
-                }
-                // this.getServer().addRecipe(sl);
-                log.info("[SnowBalls] Added shapeless recipe with name '" + s1 + "'!");
-                shapelessRecipes.add(sl);
+                    // this.getServer().addRecipe(sl);
+                    log.info("[SnowBalls] Added shapeless recipe with name '" + s1 + "'!");
+                    SnowBalls.shapelessRecipes.add(sl);
 
-            } catch (NullPointerException ex) {
-                System.out.println("Error with recipe '" + s1 + "'!");
+                } catch (NullPointerException ex) {
+                    log.warning("Error with recipe '" + s1 + "'!");
+                }
             }
         }
 
-        List<String> shapedrecipelines = this.getConfiguration().getKeys("recipes.shaped");
-        for (String s1 : shapedrecipelines) {
-            try {
-                List<Integer> result = this.getConfiguration().getIntList("recipes.shaped." + s1 + ".result", null);
-                ShapedRecipe sr = new ShapedRecipe(new ItemStack(result.get(0), result.get(2), result.get(1).shortValue()));
-                // sr.
-                String[] shape = this.getConfiguration().getStringList("recipes.shaped." + s1 + ".shape", null).toArray(new String[0]);
-                sr.shape(shape);
-                for (String charac : this.getConfiguration().getKeys("recipes.shaped." + s1 + ".ingredients")) {
-                    List<Integer> l = this.getConfiguration().getIntList("recipes.shaped." + s1 + ".ingredients." + charac, null);
-                    Material mat = Material.getMaterial(l.get(0));
-                    sr.setIngredient(charac.toCharArray()[0], mat, l.get(1));
+        section = this.getConfig().getConfigurationSection("recipes.shaped");
+
+        if (section != null) {
+            Set<String> shapedrecipelines = section.getKeys(false);
+
+            for (String s1 : shapedrecipelines) {
+                try {
+                    List<Integer> result = this.getConfig().getIntegerList("recipes.shaped." + s1 + ".result");// , null);
+                    ShapedRecipe sr = new ShapedRecipe(new ItemStack(result.get(0), result.get(2), result.get(1).shortValue()));
+                    String[] shape = this.getConfig().getStringList("recipes.shaped." + s1 + ".shape"/* , null*/).toArray(new String[0]);
+                    sr.shape(shape);
+
+
+                    Set<String> shapedRecipeIngredients = this.getConfig().getConfigurationSection("recipes.shaped."+s1+".ingredients").getKeys(false);
+                    for (String charac : shapedRecipeIngredients) {
+                        List<Integer> l = this.getConfig().getIntegerList("recipes.shaped." + s1 + ".ingredients." + charac);//, null);
+                        Material mat = Material.getMaterial(l.get(0));
+                        sr.setIngredient(charac.toCharArray()[0], mat, l.get(1));
+                    }
+                    log.info("[SnowBalls] Added shaped recipe with name '" + s1 + "'!");
+                    SnowBalls.shapedRecipes.add(sr);
+                } catch (NullPointerException ex) {
+                    log.warning("Error with recipe '" + s1 + "'!");
                 }
-                log.info("[SnowBalls] Added shaped recipe with name '" + s1 + "'!");
-                shapedRecipes.add(sr);
-            } catch (NullPointerException ex) {
-                System.out.println("Error with recipe '" + s1 + "'!");
             }
         }
 
         // if(enableInfiniteLava)
-        if (enableMaxStack) this.setMaxStack();
+
+        if (enableMaxStack) {
+            log.info("[SnowBalls] Setting max stack sizes!");
+            this.setMaxStack();
+        }
     }
 
     public void onDisable() {
@@ -126,10 +149,10 @@ public class SnowBalls extends JavaPlugin {
     }
 
     public void addRecipes() {
-        for (ShapelessRecipe recipe : shapelessRecipes) {
+        for (ShapelessRecipe recipe : SnowBalls.shapelessRecipes) {
             this.getServer().addRecipe(recipe);
         }
-        for (ShapedRecipe recipe : shapedRecipes) {
+        for (ShapedRecipe recipe : SnowBalls.shapedRecipes) {
             this.getServer().addRecipe(recipe);
         }
     }
@@ -139,9 +162,10 @@ public class SnowBalls extends JavaPlugin {
         pdffile = this.getDescription();
 
         // this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Monitor, this);
-        this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
+        /* this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
         this.getServer().getPluginManager().registerEvent(Event.Type.LEAVES_DECAY, blockListener, Event.Priority.Monitor, this);
-        this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_FROMTO, blockListener, Event.Priority.Lowest, this);
+        this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_FROMTO, blockListener, Event.Priority.Lowest, this); */
+        this.getServer().getPluginManager().registerEvents(blockListener, this);
 
         this.getServer().getMessenger().registerIncomingPluginChannel(this, pluginMessageChannel, pluginMessageListener);
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, pluginMessageChannel);
@@ -170,7 +194,6 @@ public class SnowBalls extends JavaPlugin {
                 stack */
                 CraftItemStack cis = new CraftItemStack(matid);
                 cis.setMaxStackSize(64);
-
                 extraids.put(matid, 64);
                 // stack.setMaxStackSize(64);
             }
@@ -182,24 +205,24 @@ public class SnowBalls extends JavaPlugin {
         List<String> recipes = new ArrayList<String>();
         String s = "";
         ItemStack isr;
-        List<MaterialData> ist;
+        List<ItemStack> ist;
         if (shapelessRecipes != null && shapelessRecipes.size() > 0) {
             for (ShapelessRecipe sr : shapelessRecipes) {
                 isr = sr.getResult();
                 ist = sr.getIngredientList();
                 s = /* CUIPattern + */ "0:" + isr.getTypeId() + ";" + isr.getDurability() + ";" + isr.getAmount();
-                Map<MaterialData, Integer> matList = new HashMap<MaterialData, Integer>();
-                for (MaterialData md : ist) {
+                Map<ItemStack, Integer> matList = new HashMap<ItemStack, Integer>();
+                for (ItemStack md : ist) {
                     if (!matList.containsKey(md))
                         matList.put(md, 1);
                     else
                         matList.put(md, matList.get(md) + 1);
                 }
 
-                for (MaterialData md : matList.keySet()) {
-                    int amount = matList.get(md);
+                for (Map.Entry<ItemStack, Integer> md : matList.entrySet()) {
+                    // int amount = matList.get(md);
                     // if (!SUIv2)
-                    s += "|" + md.getItemTypeId() + ";" + md.getData() + ";" + amount;
+                    s += "|" + md.getKey().getTypeId() + ";" + md.getKey().getData().getData() + ";" + md.getValue();
                     /* else {
                         boolean showAmount = (amount > 1);
                         boolean showData = md.getData() != 0 || showAmount;
@@ -227,8 +250,8 @@ public class SnowBalls extends JavaPlugin {
                     if (a == ' ') {
                         s += "|";
                     } else {
-                        MaterialData md = shr.getIngredientMap().get(a);
-                        s += "|" + md.getItemTypeId() + ";" + md.getData() + ";" + 1;
+                        ItemStack md = shr.getIngredientMap().get(a);
+                        s += "|" + md.getTypeId() + ";" + md.getData().getData() + ";" + 1;
                     }
                 }
             }

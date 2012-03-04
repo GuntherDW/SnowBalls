@@ -1,9 +1,10 @@
 package com.guntherdw.bukkit.SnowBalls;
 
 import org.bukkit.Material;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
-import org.bukkit.event.inventory.InventoryListener;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Random;
@@ -11,7 +12,7 @@ import java.util.Random;
 /**
  * @author GuntherDW
  */
-public class SnowBallsInventory extends InventoryListener {
+public class SnowBallsInventory implements Listener {
 
     private SnowBalls plugin;
     private Random rnd = new Random();
@@ -20,6 +21,7 @@ public class SnowBallsInventory extends InventoryListener {
         this.plugin = instance;
     }
 
+    @EventHandler
     public void onFurnaceBurn(FurnaceBurnEvent event) {
         if (event.isCancelled()) return;
 
@@ -42,6 +44,7 @@ public class SnowBallsInventory extends InventoryListener {
 
     }
 
+    @EventHandler
     public void onFurnaceSmelt(FurnaceSmeltEvent event) {
         if (event.isCancelled()) return;
 

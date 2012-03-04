@@ -4,9 +4,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -15,14 +16,13 @@ import java.util.Random;
 /**
  * @author GuntherDW
  */
-public class SnowBallsBlock extends BlockListener {
+public class SnowBallsBlock implements Listener {
 
     private SnowBalls plugin;
     private Random    rnd = new Random();
     private int[] lijp = new int[20];
 
-    public SnowBallsBlock(SnowBalls instance)
-    {
+    public SnowBallsBlock(SnowBalls instance) {
         this.plugin = instance;
     }
 
@@ -30,6 +30,7 @@ public class SnowBallsBlock extends BlockListener {
         return stack!=null && stack.getTypeId() == Material.SHEARS.getId();
     }
 
+    @EventHandler
     public void onBlockFromTo(BlockFromToEvent event){
         if(!plugin.enableInfiniteLava) return;
         if(event.isCancelled())        return;
@@ -60,6 +61,7 @@ public class SnowBallsBlock extends BlockListener {
         }
     }
 
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent event)
     {
         if(event.isCancelled()) return;
@@ -91,6 +93,7 @@ public class SnowBallsBlock extends BlockListener {
         }
     }
 
+    @EventHandler
     public void onLeavesDecay(LeavesDecayEvent event) {
         if(!plugin.leavesLoot)  return;
         if(event.isCancelled()) return;

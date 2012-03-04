@@ -1,12 +1,12 @@
 package com.guntherdw.bukkit.SnowBalls;
 
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerListener;
 
 /**
  * @author GuntherDW
  */
-public class SnowBallsPlayer extends PlayerListener {
+public class SnowBallsPlayer implements Listener {
 
     private SnowBalls plugin;
 
