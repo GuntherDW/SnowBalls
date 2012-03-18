@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2012 GuntherDW
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
 package com.guntherdw.bukkit.SnowBalls;
 
 import com.sk89q.worldedit.blocks.ItemType;
@@ -11,6 +29,7 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.material.MaterialData;
@@ -146,6 +165,8 @@ public class SnowBalls extends JavaPlugin {
 
     public void onDisable() {
         log.info("[" + pdffile.getName() + "] " + pdffile.getName() + " version " + pdffile.getVersion() + " shutting down!");
+        log.info("[" + pdffile.getName() + "] Resetting recipes to default");
+        this.getServer().resetRecipes();
     }
 
     public void addRecipes() {
@@ -160,16 +181,10 @@ public class SnowBalls extends JavaPlugin {
     public void onEnable() {
         // cuiPlayers = new HashMap<Player, Boolean>();
         pdffile = this.getDescription();
-
-        // this.getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, playerListener, Event.Priority.Monitor, this);
-        /* this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_BREAK, blockListener, Event.Priority.Monitor, this);
-        this.getServer().getPluginManager().registerEvent(Event.Type.LEAVES_DECAY, blockListener, Event.Priority.Monitor, this);
-        this.getServer().getPluginManager().registerEvent(Event.Type.BLOCK_FROMTO, blockListener, Event.Priority.Lowest, this); */
         this.getServer().getPluginManager().registerEvents(blockListener, this);
 
         this.getServer().getMessenger().registerIncomingPluginChannel(this, pluginMessageChannel, pluginMessageListener);
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, pluginMessageChannel);
-
 
         shapelessRecipes = new HashSet<ShapelessRecipe>();
         shapedRecipes = new HashSet<ShapedRecipe>();
@@ -322,6 +337,7 @@ public class SnowBalls extends JavaPlugin {
                 } else if (args[0].equalsIgnoreCase("reload")) {
                     if (sender.isOp() || sender.hasPermission("snowballs.reloadconfig")) {
                         sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
+                        this.getServer().resetRecipes();
                         this.parseConfig();
                         this.addRecipes();
                     } else {
