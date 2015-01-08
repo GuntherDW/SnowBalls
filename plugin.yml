@@ -1,6 +1,6 @@
 name: SnowBalls
 main: com.guntherdw.bukkit.SnowBalls.SnowBalls
-version: 2.6
+version: 2.7
 commands:
     snowballs:
         description: ClientMod interface

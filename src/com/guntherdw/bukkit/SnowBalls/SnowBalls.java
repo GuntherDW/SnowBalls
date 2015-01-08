@@ -19,25 +19,25 @@
 package com.guntherdw.bukkit.SnowBalls;
 
 import com.sk89q.worldedit.blocks.ItemType;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
-import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -76,8 +76,9 @@ public class SnowBalls extends JavaPlugin {
         if (inited) {
             SnowBalls.shapelessRecipes.clear();
             SnowBalls.shapedRecipes.clear();
+            this.getServer().resetRecipes();
             try {
-                this.getConfig().load("config.yml");
+                this.getConfig().load(new File(this.getDataFolder(), "config.yml"));
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InvalidConfigurationException e) {
@@ -197,23 +198,71 @@ public class SnowBalls extends JavaPlugin {
     public void setMaxStack() {
         extraids = new TreeMap<Integer, Integer>();
 
+        // Walk the stack to find which version we're currently using.
+        String packageName = getServer().getClass().getPackage().getName();
+        String CBVersion = packageName.substring(packageName.lastIndexOf(".") + 1);
+        getLogger().info("Found Craftbukkit version " + CBVersion);
+
         for (Material mat : Material.values()) {
             int matid = mat.getId();
+            if(matid == 0 || matid > 1024) continue;
 
             if (mat.getMaxStackSize() != 64
                 && !ItemType.shouldNotStack(matid)) {
                 if (!origstacksizes.containsKey(matid)) { // Only store it if we're going to change it!
                     origstacksizes.put(matid, mat.getMaxStackSize());
                 }
-                /* ItemStack stack = new ItemStack(matid);
-                stack */
-                CraftItemStack cis = new CraftItemStack(matid);
-                cis.setMaxStackSize(64);
+                //
+
+                System.out.println("Setting maxStackSize of ItemID : "+matid);
+                ItemStack stack = new ItemStack(matid);
+
+                // org.bukkit.craftbukkit.v1_7_R1.inventory.CraftItemStack;
+                /* try {
+                    Class c = Class.forName("org.bukkit.craftbukkit."+CBVersion+".inventory.CraftItemStack");
+                    Method m = c.getDeclaredMethod("asCraftCopy", ItemStack.class);
+                    Object instance = m.invoke(c, stack);
+
+                    Method m_setMaxStackSize = c.getDeclaredMethod("setMaxStackSize", int.class);
+                    m_setMaxStackSize.invoke(instance, 64);
+
+                    extraids.put(matid, 64);
+                } catch(Exception iDontCare) {
+                    // TODO: Only in DEBUG
+                    // iDontCare.printStackTrace();
+                } */
+                /* org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack cis = org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack.asCraftCopy(stack);
+                cis.setMaxStackSize(64); */
+                try {
+
+                    Class cls = Class.forName("org.bukkit.craftbukkit."+CBVersion+".inventory.CraftItemStack");
+                    Method m = cls.getDeclaredMethod("asCraftCopy", ItemStack.class);
+                    Method m2 = cls.getDeclaredMethod("setMaxStackSize", int.class);
+                    Object cis = m.invoke(null, stack);
+                    m2.invoke(cis, 64);
+
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+
+                // System.out.println(org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack.asCraftCopy(stack).getMaxStackSize());
+
                 extraids.put(matid, 64);
-                // stack.setMaxStackSize(64);
+                // CraftItemStack cis = CraftItemStack.asCraftCopy(stack);
+                // cis.setMaxStackSize(64);
             }
         }
     }
+
+    /* public void setCraftItemMaxStack(Class<? extends ItemStack> stack) {
+
+    } */
 
 
     public List<String> getRecipes() {
