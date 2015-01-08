@@ -205,7 +205,7 @@ public class SnowBalls extends JavaPlugin {
 
         for (Material mat : Material.values()) {
             int matid = mat.getId();
-            if(matid == 0 || matid > 1024) continue;
+            if(matid == 0 || matid > 4096) continue;
 
             if (mat.getMaxStackSize() != 64
                 && !ItemType.shouldNotStack(matid)) {
@@ -217,22 +217,6 @@ public class SnowBalls extends JavaPlugin {
                 System.out.println("Setting maxStackSize of ItemID : "+matid);
                 ItemStack stack = new ItemStack(matid);
 
-                // org.bukkit.craftbukkit.v1_7_R1.inventory.CraftItemStack;
-                /* try {
-                    Class c = Class.forName("org.bukkit.craftbukkit."+CBVersion+".inventory.CraftItemStack");
-                    Method m = c.getDeclaredMethod("asCraftCopy", ItemStack.class);
-                    Object instance = m.invoke(c, stack);
-
-                    Method m_setMaxStackSize = c.getDeclaredMethod("setMaxStackSize", int.class);
-                    m_setMaxStackSize.invoke(instance, 64);
-
-                    extraids.put(matid, 64);
-                } catch(Exception iDontCare) {
-                    // TODO: Only in DEBUG
-                    // iDontCare.printStackTrace();
-                } */
-                /* org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack cis = org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack.asCraftCopy(stack);
-                cis.setMaxStackSize(64); */
                 try {
 
                     Class cls = Class.forName("org.bukkit.craftbukkit."+CBVersion+".inventory.CraftItemStack");
