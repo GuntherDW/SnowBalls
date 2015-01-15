@@ -1,7 +1,10 @@
 name: SnowBalls
 main: com.guntherdw.bukkit.SnowBalls.SnowBalls
-version: 2.7
+version: 2.8
 commands:
     snowballs:
         description: ClientMod interface
         usage: /<command> [client|reload]
+    search:
+        description: Search for an item in nearby inventories
+        usage: /<command> [item] (range)

@@ -3,6 +3,10 @@ block:
     dropbookshelves: false
     dropice: true
 
+search:
+    default-range: 10
+    maximum-range: 100
+
 hacks:
     inflava: true
     maxstack: true

@@ -47,13 +47,11 @@ import java.util.logging.Logger;
 public class SnowBalls extends JavaPlugin {
 
     private final SnowBallsBlock blockListener = new SnowBallsBlock(this);
-    private final SnowBallsPlayer playerListener = new SnowBallsPlayer(this);
-    // private final SnowBallsInventory inventoryListener = new SnowBallsInventory(this);
+
     private final SnowBallsPluginMessageListener pluginMessageListener = new SnowBallsPluginMessageListener(this);
+    private final ZonesHelper zonesHelper = new ZonesHelper(this);
     private final JsonHelper jsonHelper = new JsonHelper(this);
-    // private Map<Player, Boolean> cuiPlayers;
-    // private Map<Player, Boolean> newCUI;
-    // protected String CUIPattern = "§7§3§3§7";
+
     protected static final Logger log = Logger.getLogger("Minecraft");
     protected String pluginMessageChannel = "SnowBalls";
     protected static Set<ShapelessRecipe> shapelessRecipes;
@@ -65,7 +63,12 @@ public class SnowBalls extends JavaPlugin {
     protected boolean leavesLoot = false;
     protected boolean bookshelvesdrop = false;
     protected boolean icedrop = false;
+    protected int defaultSearchRange = 20;
+    protected int maximumSearchRange = 100;
     private boolean inited = false;
+
+    protected boolean useZones = false;
+
     protected Map<Integer, Integer> origstacksizes = new HashMap<Integer, Integer>();
 
     @SuppressWarnings("unchecked")
@@ -97,6 +100,13 @@ public class SnowBalls extends JavaPlugin {
         if (this.bookshelvesdrop) log.info("[SnowBalls] Book shelves dropping enabled!");
         this.icedrop = this.getConfig().getBoolean("block.dropice", false);
         if (this.icedrop) log.info("[SnowBalls] Ice dropping enabled!");
+        this.defaultSearchRange = this.getConfig().getInt("search.default-range", 20);
+        this.maximumSearchRange = this.getConfig().getInt("search.maximum-range", 100);
+        log.info("[SnowBalls] Default search range : "+this.defaultSearchRange+"!");
+        log.info("[SnowBalls] Maximum search range : "+this.maximumSearchRange+"!");
+
+        this.useZones = zonesHelper.checkForZones();
+        if(useZones) log.info("[SnowBalls] Using Zones to check for block permissions!");
 
         ConfigurationSection section = this.getConfig().getConfigurationSection("recipes.shapeless");
         if (section != null) {
@@ -164,6 +174,7 @@ public class SnowBalls extends JavaPlugin {
         }
     }
 
+    @Override
     public void onDisable() {
         log.info("[" + pdffile.getName() + "] " + pdffile.getName() + " version " + pdffile.getVersion() + " shutting down!");
         log.info("[" + pdffile.getName() + "] Resetting recipes to default");
@@ -179,6 +190,7 @@ public class SnowBalls extends JavaPlugin {
         }
     }
 
+    @Override
     public void onEnable() {
         // cuiPlayers = new HashMap<Player, Boolean>();
         pdffile = this.getDescription();
@@ -191,6 +203,8 @@ public class SnowBalls extends JavaPlugin {
         shapedRecipes = new HashSet<ShapedRecipe>();
         this.parseConfig();
         this.addRecipes();
+
+        this.getCommand("search").setExecutor(new SearchCommand(this));
 
         log.info("[" + pdffile.getName() + "] " + pdffile.getName() + " version " + pdffile.getVersion() + " loaded!");
     }
@@ -234,20 +248,10 @@ public class SnowBalls extends JavaPlugin {
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }
-
-                // System.out.println(org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack.asCraftCopy(stack).getMaxStackSize());
-
                 extraids.put(matid, 64);
-                // CraftItemStack cis = CraftItemStack.asCraftCopy(stack);
-                // cis.setMaxStackSize(64);
             }
         }
     }
-
-    /* public void setCraftItemMaxStack(Class<? extends ItemStack> stack) {
-
-    } */
-
 
     public List<String> getRecipes() {
         List<String> recipes = new ArrayList<String>();
@@ -324,16 +328,19 @@ public class SnowBalls extends JavaPlugin {
         return jsonHelper;
     }
 
+    public ZonesHelper getZonesHelper() {
+        return zonesHelper;
+    }
+
     public void sendRecipes(Player p) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         List<String> recipes = getRecipes();
 
-        int i = 0;
+        bos.write((byte) 10); // Inventories
         for (String recipeLine : recipes) {
             try {
                 bos.write(recipeLine.getBytes("UTF-8"));
                 bos.write((byte) 0);
-                i++;
             } catch (IOException ex) {
                 ;
             }
@@ -346,29 +353,10 @@ public class SnowBalls extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equals("snowballs")) {
             if (args.length > 0) {
-                /* if (args[0].equalsIgnoreCase("client") && sender instanceof Player) {
-                    Player player = (Player) sender;
-                    boolean SUIv25 = args.length > 1 && args[1].equalsIgnoreCase("SUIv25");
-
-                    if (!onList) {
-                        log.info("[" + pdffile.getName() + "] Adding " + player.getName() + " to the SUI list...");
-                        cuiPlayers.put((Player) sender, SUIv25);
-                    } else {
-                        boolean legacy = !cuiPlayers.get(player);
-                        if (legacy && SUIv25) {
-                            log.info("[" + pdffile.getName() + "] Updating " + player.getName() + "'s SUI status to SUIv2");
-                            cuiPlayers.put((Player) sender, SUIv25);
-                        } else {
-                            log.info("[" + pdffile.getName() + "] " + player.getName() + " already is assigned to the SUI list...");
-                        }
-                    }
-
-                    this.sendRecipes((Player) sender);
-                } else */
                 if (args[0].equalsIgnoreCase("sendrecipes")) {
                     this.sendRecipes((Player) sender);
                 } else if (args[0].equalsIgnoreCase("reload")) {
-                    if (sender.isOp() || sender.hasPermission("snowballs.reloadconfig")) {
+                    if (sender.hasPermission("snowballs.reloadconfig")) {
                         sender.sendMessage(ChatColor.YELLOW + "Reloading config...");
                         this.getServer().resetRecipes();
                         this.parseConfig();
@@ -380,6 +368,8 @@ public class SnowBalls extends JavaPlugin {
                     sender.sendMessage(command.getUsage());
                 }
             }
+        } else if(command.getName().equals("search")) {
+
         }
         return true;
     }
