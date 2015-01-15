@@ -368,8 +368,6 @@ public class SnowBalls extends JavaPlugin {
                     sender.sendMessage(command.getUsage());
                 }
             }
-        } else if(command.getName().equals("search")) {
-
         }
         return true;
     }
