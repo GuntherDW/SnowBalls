@@ -18,7 +18,6 @@
 
 package com.guntherdw.bukkit.SnowBalls;
 
-import com.guntherdw.bukkit.tweakcraft.TweakcraftUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -31,7 +30,6 @@ import java.util.List;
 public class JsonHelper {
 
     private SnowBalls plugin;
-    private TweakcraftUtils tcutils = null;
 
     public JsonHelper(SnowBalls instance) {
         this.plugin = instance;
@@ -39,7 +37,7 @@ public class JsonHelper {
     }
 
     public boolean teleportTo(String pstring, Integer x, Integer y, Integer z, String world) {
-        if(tcutils==null) tcutils = TweakcraftUtils.getInstance();
+
         Player player = plugin.getServer().getPlayerExact(pstring);
 
         World w = null;
@@ -51,9 +49,9 @@ public class JsonHelper {
             w = plugin.getServer().getWorld(world);
             if (w == null) w = player.getWorld();
         }
-        if (tcutils != null) {
-            tcutils.getTelehistory().addHistory(player.getName(), player.getLocation());
-        }
+
+        plugin.getTweakcraftUtilsHelper().addTeleportHistory(player);
+
         Location loc = new Location(w, x, y, z);
         return player.teleport(loc);
     }

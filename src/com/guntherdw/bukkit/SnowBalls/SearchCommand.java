@@ -62,12 +62,19 @@ public class SearchCommand implements CommandExecutor {
         Player player = (Player) commandSender;
         if (!player.hasPermission("snowballs.searchinventories")) {
             commandSender.sendMessage(ChatColor.RED + "You don't have the correct permission to search nearby inventories");
+            return true;
         }
 
         if (args.length == 0) {
             player.sendMessage(ChatColor.GOLD + "Give me an item to look for!");
             return true;
         }
+        if(args.length == 1 && args[0].equalsIgnoreCase("clear") && player.getListeningPluginChannels().contains(plugin.pluginMessageChannel)) {
+            player.sendPluginMessage(plugin, plugin.pluginMessageChannel, new byte[]{20});
+            player.sendMessage(ChatColor.GOLD + "Cleared your search!");
+            return true;
+        }
+
         int range = Math.min(args.length == 2 ? Integer.parseInt(args[1]) : plugin.defaultSearchRange, plugin.maximumSearchRange);
 
         player.sendMessage(ChatColor.GOLD + "Going to look for " + args[0] + " in a range of " + range + " blocks!");
@@ -93,9 +100,13 @@ public class SearchCommand implements CommandExecutor {
             data = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
 
             // Try as a Material
-            Material m = Material.valueOf(itemName.toUpperCase());
-            if (m != null) {
-                toSearch = new ItemStack(m, 1, data.shortValue());
+            try {
+                Material m = Material.valueOf(itemName.toUpperCase());
+                if (m != null) {
+                    toSearch = new ItemStack(m, 1, data.shortValue());
+                }
+            } catch(IllegalArgumentException ex) { // Material not found, check for WE/TCUtils item database?
+                toSearch = plugin.getTweakcraftUtilsHelper().searchItem(parts[0]);
             }
         }
 

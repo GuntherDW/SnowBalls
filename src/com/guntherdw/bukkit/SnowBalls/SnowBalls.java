@@ -50,6 +50,7 @@ public class SnowBalls extends JavaPlugin {
 
     private final SnowBallsPluginMessageListener pluginMessageListener = new SnowBallsPluginMessageListener(this);
     private final ZonesHelper zonesHelper = new ZonesHelper(this);
+    private final TweakcraftUtilsHelper tcUtilsHelper = new TweakcraftUtilsHelper(this);
     private final JsonHelper jsonHelper = new JsonHelper(this);
 
     protected static final Logger log = Logger.getLogger("Minecraft");
@@ -68,6 +69,7 @@ public class SnowBalls extends JavaPlugin {
     private boolean inited = false;
 
     protected boolean useZones = false;
+    protected boolean useTCUtils = false;
 
     protected Map<Integer, Integer> origstacksizes = new HashMap<Integer, Integer>();
 
@@ -106,7 +108,10 @@ public class SnowBalls extends JavaPlugin {
         log.info("[SnowBalls] Maximum search range : "+this.maximumSearchRange+"!");
 
         this.useZones = zonesHelper.checkForZones();
-        if(useZones) log.info("[SnowBalls] Using Zones to check for block permissions!");
+        if(useZones) log.info("[SnowBalls] Using Zones helper methods!");
+
+        this.useTCUtils = tcUtilsHelper.checkForTweakcraftUtils();
+        if(useTCUtils) log.info("[SnowBalls] Using TweakcraftUtils helper methods!");
 
         ConfigurationSection section = this.getConfig().getConfigurationSection("recipes.shapeless");
         if (section != null) {
@@ -330,6 +335,10 @@ public class SnowBalls extends JavaPlugin {
 
     public ZonesHelper getZonesHelper() {
         return zonesHelper;
+    }
+
+    public TweakcraftUtilsHelper getTweakcraftUtilsHelper() {
+        return tcUtilsHelper;
     }
 
     public void sendRecipes(Player p) {
